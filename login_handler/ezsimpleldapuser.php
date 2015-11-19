@@ -56,6 +56,9 @@ class eZSimpleLDAPUser extends eZUser
         $LDAPServer             = $LDAPIni->variable( 'LDAPSettings', 'LDAPServer' );
         $LDAPPort               = $LDAPIni->variable( 'LDAPSettings', 'LDAPPort' );
         $LDAPFollowReferrals    = (int) $LDAPIni->variable( 'LDAPSettings', 'LDAPFollowReferrals' );
+	$LDAPUserDomainName     = $LDAPIni->variable( 'LDAPSettings', 'LDAPUserDomainName' );
+
+	if ( $LDAPUserDomainName ) $login .= '@' . $LDAPUserDomainName;
 
         if ( function_exists( 'ldap_connect' ) )
         {
@@ -70,6 +73,10 @@ class eZSimpleLDAPUser extends eZUser
                     @ldap_close( $ds );
                     return true;
                 }
+		else
+		{
+			eZLog::write( "File to login user $login", 'ldap.log' );
+		}
             }
             else
             {
