@@ -41,24 +41,32 @@ class eZSimpleLDAPUser extends eZUser
                         eZUser::updateLastVisit( $userID );
                         eZUser::setCurrentlyLoggedInUser( $user, $userID );
                         eZUser::setFailedLoginAttempts( $userID, 0 );
+
                         return $user;
                     }
                 }
             }
         }
+
         return false;
     }
 
     protected static function LDAPLogin( $login, $password )
     {
         $LDAPIni = eZINI::instance( 'ldap.ini' );
-        $LDAPVersion            = $LDAPIni->variable( 'LDAPSettings', 'LDAPVersion' );
-        $LDAPServer             = $LDAPIni->variable( 'LDAPSettings', 'LDAPServer' );
-        $LDAPPort               = $LDAPIni->variable( 'LDAPSettings', 'LDAPPort' );
-        $LDAPFollowReferrals    = (int) $LDAPIni->variable( 'LDAPSettings', 'LDAPFollowReferrals' );
-	$LDAPUserDomainName     = $LDAPIni->variable( 'LDAPSettings', 'LDAPUserDomainName' );
+        $LDAPVersion = $LDAPIni->variable( 'LDAPSettings', 'LDAPVersion' );
+        $LDAPServer = $LDAPIni->variable( 'LDAPSettings', 'LDAPServer' );
+        $LDAPPort = $LDAPIni->variable( 'LDAPSettings', 'LDAPPort' );
+        $LDAPFollowReferrals = (int)$LDAPIni->variable( 'LDAPSettings', 'LDAPFollowReferrals' );
 
-	if ( $LDAPUserDomainName ) $login .= '@' . $LDAPUserDomainName;
+        $LDAPUserDomainName = false;
+        if ( $LDAPIni->hasVariable( 'LDAPSettings', 'LDAPUserDomainName' ) )
+            $LDAPUserDomainName = $LDAPIni->variable( 'LDAPSettings', 'LDAPUserDomainName' );
+
+        if ( $LDAPUserDomainName )
+        {
+            $login .= '@' . $LDAPUserDomainName;
+        }
 
         if ( function_exists( 'ldap_connect' ) )
         {
@@ -71,21 +79,24 @@ class eZSimpleLDAPUser extends eZUser
                 if ( $r )
                 {
                     @ldap_close( $ds );
+
                     return true;
                 }
-		else
-		{
-			eZLog::write( "File to login user $login", 'ldap.log' );
-		}
+                else
+                {
+                    eZLog::write( "Failed login user $login", 'ldap.log' );
+                }
             }
             else
             {
                 eZLog::write( "Can not to connect to $LDAPServer  (user $login)", 'ldap.log' );
             }
             ldap_close( $ds );
+
             return false;
         }
         eZLog::write( "Function 'ldap_connect' not found (user $login)", 'ldap.log' );
+
         return false;
     }
 }
