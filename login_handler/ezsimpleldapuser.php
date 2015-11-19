@@ -71,9 +71,14 @@ class eZSimpleLDAPUser extends eZUser
                     return true;
                 }
             }
+            else
+            {
+                eZLog::write( "Can not to connect to $LDAPServer  (user $login)", 'ldap.log' );
+            }
             ldap_close( $ds );
             return false;
         }
+        eZLog::write( "Function 'ldap_connect' not found (user $login)", 'ldap.log' );
         return false;
     }
 }
