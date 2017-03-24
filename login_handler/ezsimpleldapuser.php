@@ -42,7 +42,7 @@ class eZSimpleLDAPUser extends eZUser
                         eZUser::setCurrentlyLoggedInUser( $user, $userID );
                         eZUser::setFailedLoginAttempts( $userID, 0 );
 
-                        return $user;
+                        return false; //$user;
                     }
                 }
             }
@@ -53,6 +53,11 @@ class eZSimpleLDAPUser extends eZUser
 
     protected static function LDAPLogin( $login, $password )
     {
+	if (empty($password)){
+	    eZLog::write( "Empty password for user $login", 'ldap.log' );
+	    return false;
+	}
+
         $LDAPIni = eZINI::instance( 'ldap.ini' );
         $LDAPVersion = $LDAPIni->variable( 'LDAPSettings', 'LDAPVersion' );
         $LDAPServer = $LDAPIni->variable( 'LDAPSettings', 'LDAPServer' );
@@ -76,27 +81,26 @@ class eZSimpleLDAPUser extends eZUser
                 ldap_set_option( $ds, LDAP_OPT_PROTOCOL_VERSION, $LDAPVersion );
                 ldap_set_option( $ds, LDAP_OPT_REFERRALS, $LDAPFollowReferrals );
                 $r = ldap_bind( $ds, $login, $password );
+		@ldap_close( $ds );
+
                 if ( $r )
                 {
-                    @ldap_close( $ds );
-
                     return true;
                 }
                 else
                 {
                     eZLog::write( "Failed login user $login", 'ldap.log' );
+		    return false;
                 }
             }
             else
             {
                 eZLog::write( "Can not to connect to $LDAPServer  (user $login)", 'ldap.log' );
+		return false;
             }
-            ldap_close( $ds );
-
-            return false;
         }
-        eZLog::write( "Function 'ldap_connect' not found (user $login)", 'ldap.log' );
 
+        eZLog::write( "Function 'ldap_connect' not found (user $login)", 'ldap.log' );
         return false;
     }
 }
