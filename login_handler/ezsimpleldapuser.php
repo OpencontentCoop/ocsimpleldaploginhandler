@@ -42,7 +42,7 @@ class eZSimpleLDAPUser extends eZUser
                         eZUser::setCurrentlyLoggedInUser( $user, $userID );
                         eZUser::setFailedLoginAttempts( $userID, 0 );
 
-                        return false; //$user;
+                        return $user;
                     }
                 }
             }
