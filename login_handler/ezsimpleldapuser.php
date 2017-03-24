@@ -80,7 +80,7 @@ class eZSimpleLDAPUser extends eZUser
             {
                 ldap_set_option( $ds, LDAP_OPT_PROTOCOL_VERSION, $LDAPVersion );
                 ldap_set_option( $ds, LDAP_OPT_REFERRALS, $LDAPFollowReferrals );
-                $r = ldap_bind( $ds, $login, $password );
+                $r = @ldap_bind( $ds, $login, $password );
 		@ldap_close( $ds );
 
                 if ( $r )
